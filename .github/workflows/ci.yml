@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,mcp]"
+      - name: Ruff
+        run: ruff check src tests
+      - name: Mypy
+        run: mypy
+      - name: Pytest
+        run: pytest -q
+
+  # Real transformers MusicGen + Demucs code with tiny random-weight checkpoints
+  # (CPU). Real-weight GPU tests are opt-in: pytest -m "gpu and network".
+  music-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install (CPU torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev,mcp]" "transformers>=4.45,<6" "demucs>=4.1" numpy tokenizers
+      - name: Contract tests
+        run: pytest -q tests/test_contract_models.py -rs
+
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - name: Build package (runs the test suite in the check phase)
+        run: nix build .#default --no-write-lock-file -L
+      - name: Smoke
+        run: |
+          ./result/bin/prompt2music --version
+          ./result/bin/prompt2music-mcp --version
+          ./result/bin/aimusic --version

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "prompt2music": {
+      "command": "prompt2music-mcp",
+      "args": []
+    }
+  }
+}

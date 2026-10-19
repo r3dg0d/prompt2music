@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Models / weights (never commit)
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+/models/
+weights/
+checkpoints/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local config / cache
+.env
+.env.*
+!.env.example
+*.log
+/tmp/
+
+# Nix
+result
+result-*
+
+# Casts / large demos (keep .gitkeep)
+demos/casts/*
+!demos/casts/.gitkeep
+
+# Extra caches / secrets / large local state
+.cache/
+__pycache__/
+*.gguf
+*.engine
+*.onnx
+secrets.env
+*.pem
+*.key
+huggingface/
+.hf_home/
+.torch/
+wandb/

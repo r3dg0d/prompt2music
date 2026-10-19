@@ -1,0 +1,79 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "prompt2music"
+version = "0.1.0"
+description = "Local music generation with open-weight models: CLI + MCP server (ACE-Step 1.5, Stable Audio 3, MusicGen, HeartMuLa, YuE2)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Vincent", email = "192937334+r3dg0d@users.noreply.github.com" }]
+keywords = ["ai", "music-generation", "cli", "mcp", "ace-step", "stable-audio", "musicgen", "local-first"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Sound/Audio",
+]
+dependencies = [
+  "rich>=13.7",
+  "tomlkit>=0.12",
+  "huggingface_hub>=0.30",
+]
+
+[project.optional-dependencies]
+# Model backends get their own venvs (`prompt2music backends install NAME`)
+# because upstream stacks pin incompatible torch/transformers versions.
+mcp = ["mcp>=1.10"]
+musicgen = ["torch>=2.4", "transformers>=4.45,<6", "numpy", "accelerate"]
+stems = ["torch>=2.1", "demucs>=4.1", "numpy"]
+dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.10"]
+all = ["prompt2music[mcp,dev]"]
+
+[project.scripts]
+prompt2music = "prompt2music.cli:main"
+aimusic = "prompt2music.cli:main_aimusic"
+prompt2music-mcp = "prompt2music.mcp.server:main"
+aimusic-mcp = "prompt2music.mcp.server:main_aimusic"
+
+[project.urls]
+Homepage = "https://github.com/r3dg0d/prompt2music"
+Repository = "https://github.com/r3dg0d/prompt2music"
+Issues = "https://github.com/r3dg0d/prompt2music/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prompt2music"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/prompt2music", "tests", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-q -m 'not gpu and not network'"
+markers = [
+  "gpu: needs a CUDA GPU, a backend env and downloaded weights (run with -m gpu)",
+  "network: needs Hugging Face access (run with -m network)",
+  "slow: CPU-heavy contract tests (random-weight models)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/prompt2music"]
+ignore_missing_imports = true
+warn_unused_ignores = false
+check_untyped_defs = true
